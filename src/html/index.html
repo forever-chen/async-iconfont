@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iconfont</title>
+  <link rel="stylesheet" href="$var_url/index.css">
+  <link rel="stylesheet" href="$var_url/loading.css">
+</head>
+
+<body>
+  <div class="webViewIcons">
+    <!-- 分类 -->
+    <div class="nav">
+      <ul class="tabs">
+        <li><span id="projectIcons" class="nav-link active">项目icons</span></li>
+        <li><span id="iconsSearch" class="nav-link">iconfont 全局搜索</span></li>
+      </ul>
+    <div class="testswitch" title="主题切换">
+      <input class="testswitch-checkbox" id="onoffswitch" type="checkbox">
+      <label class="testswitch-label" for="onoffswitch">
+        <span class="testswitch-inner" data-on="ON" data-off="OFF"></span>
+        <span class="testswitch-switch"></span>
+      </label>
+    </div>
+    </div>
+    <div style="padding: 0 20px;">
+      <!-- 搜索部分 -->
+      <div class="search-box show">
+        <div>
+          <button class="btn refresh">刷新</button>
+          <button class="btn transfer">传输至本地项目</button>
+          <select class="btn" id="selectWs">
+          </select>
+        </div>
+        <input placeholder="回车查询" id="searchProject" />
+      </div>
+      <div class="search-box">
+        <input placeholder="回车查询所有图标" id="queryGlobalIcons" />
+      </div>
+      <!-- 展示图标部分 -->
+      <ul class="iconsList"></ul>
+      <ul id="paging"></ul>
+      </div>
+      <!-- 加载 -->
+      <div style="display: none;" class="loader">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+    
+  <script src="$var_url/index.js"></script>
+  <script>
+    function formatIcon() {
+      document.querySelectorAll('path').forEach(p => {
+        p.setAttribute('fill', 'currentColor');
+      });
+    }
+    // formatIcon();
+  </script>
+</body>
+
+</html>
