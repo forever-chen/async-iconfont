@@ -22,6 +22,7 @@ export class VueService {
       }
     });
   }
+  // 清除vscode缓存
   public clearGlobalState() {
     console.log(this.context!.globalState.keys());
     const keys = this.context!.globalState.keys();
@@ -31,7 +32,7 @@ export class VueService {
   }
   // 获取项目列表
   public async getProject(refresh?: boolean): Promise<Icon[]> {
-    // this.clearGlobalState();
+    this.clearGlobalState();
     const url = '/api/user/myprojects.json?page=1&isown_create=1&t=1692675848377';
     const url1 = '/api/user/myprojects.json?page=1&isown_create=2&t=1692675848377';
     const projectInfoState = this.context!.globalState.get('projectInfoState');
@@ -69,24 +70,19 @@ export class VueService {
       return [];
     }
     // 顺便更新state
-    if (iconJsonState) {
-      const json = JSON.parse(String(iconJsonState));
-      json[id] = data;
-      this.context!.globalState.update('iconJsonState', JSON.stringify(json));
-    }
+    const json = iconJsonState && JSON.parse(String(iconJsonState)) ||{ };
+    json[id] = data;
+    this.context!.globalState.update('iconJsonState', JSON.stringify(json));
     return data;
   }
   // 获取项目内icons列表
   public async getProjectIcons(pid: string, refresh?: boolean): Promise<Icon[]> {
     console.log(this.context!.globalState.keys());
-    const iconJsonState = this.context!.globalState.get('iconJsonState');
-    let iconsData: any;
-    if (!refresh && iconJsonState) {
-      iconsData = JSON.parse(String(iconJsonState))[pid];
-    }
-    if (!iconsData) {
+    const iconJsonState = this.context!.globalState.get('iconJsonState') as string;
+    let iconsData = iconJsonState && JSON.parse(iconJsonState) && JSON.parse(iconJsonState)[pid]
+    if (refresh || !iconsData) {
       iconsData = await this.getIconProjectDetail(pid);
-    }
+     }
     const icons = iconsData.icons.map((item: any) => ({
       id: String(item.id),
       name: item.name,

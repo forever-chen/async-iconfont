@@ -101,10 +101,10 @@ html, body {
 }
 
 .iconsList {
-    display: flex;
-    flex-wrap: wrap;
-    min-height: 200px;
+    display: grid;
     justify-content: space-between;
+    grid-template-columns: repeat(auto-fill, 110px);
+    grid-gap: 10px;
 }
 
 .iconsList>li {
