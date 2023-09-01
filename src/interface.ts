@@ -21,6 +21,7 @@ export interface EventMessage {
   data: EventData;
 }
 export interface ConfigType{
+  projectUrl:string;
   projectName: string;
   transionMethod: string;
   transionSvgDir: string;

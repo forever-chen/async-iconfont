@@ -132,10 +132,6 @@ export class VueService {
       return false;
     }
   }
-  // 获取本地的icons
-  public async getLocalIcons(iconsDirPath: string) {
-   
-  }
   // 搜索全局icon
   public async searchGlobalIcons(search?: any, refresh?: boolean): Promise<{icons:Icon[],pages:number}>{
     const cookie = vscode.workspace.getConfiguration().get('iconfont.cookie') as string;

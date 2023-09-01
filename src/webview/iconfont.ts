@@ -88,17 +88,42 @@ export class VueIconfontHelper {
       this.currentActiveProject && this.start(this.currentActiveProject);
     });
   }
+  // 检查配置信息是否完整正确
+  private checkConfig(info: ConfigType | undefined) {
+    console.log(4444,info)
+    if (!info) {
+      window.showErrorMessage('请先配置传输类型和传输路径。');
+      return false;
+    }
+    if (!['svg', 'symbol'].includes(info.transionMethod)) {
+      window.showErrorMessage('传输方式配置不正确，只能是svg或者symbol，请检查：transionMethod');
+      return false;
+    }
+    if (info.transionMethod === 'svg') {
+      if (!fs.existsSync(info.transionSvgDir)) {
+        window.showErrorMessage('icons传输路径不存在，请检查传输地址配置：transionSvgDir');
+        return false;
+      }
+    } else {
+      if (!fs.existsSync(info.transionSymbolJsDir)) {
+        window.showErrorMessage('symbol js文件传输路径不存在，请检查symbol传输地址配置：transionSymbolJsDir');
+        return false;
+      }
+      if (!info.symbolJsWiteTemplateDir.endsWith('false')&&!fs.existsSync(info.symbolJsWiteTemplateDir)) {
+        window.showErrorMessage('symbol js文件插入模版路径不存在，请检查配置：symbolJsWiteTemplateDir');
+        return false;
+      }
+    }
+    return true
+  }
   // 传输icons到项目中
   public async transionIconsToProject() {
+    this.generateWorkSpaceList();
     const activeProjectConfig = this.workspaceList.find(item => item.active);
-    if(!activeProjectConfig){
-      window.showInformationMessage('请先配置传输类型和传输位置。');
+    if (!this.checkConfig(activeProjectConfig)) {
       return;
     }
     if (activeProjectConfig?.transionMethod === 'svg') {
-      if (!fs.existsSync(activeProjectConfig.transionSvgDir)) {
-        window.showErrorMessage(activeProjectConfig.projectName+'项目中传输目录不存在，请重新配置传输目录');
-       }
       let allIcons = this.context!.globalState.get('iconJsonState') && JSON.parse(String(this.context!.globalState.get('iconJsonState'))) || {};
       allIcons[this.currentActiveProject].icons.map((item: { font_class: string; show_svg: string | NodeJS.ArrayBufferView; }) => {
         fs.writeFileSync(`${ activeProjectConfig.transionSvgDir }/${ item.font_class }.svg`, item.show_svg);
@@ -107,13 +132,14 @@ export class VueIconfontHelper {
     } else if (activeProjectConfig?.transionMethod === 'symbol'){
       const iconJsonState = (this.context!.globalState.get('iconJsonState'));
       const currentProjectIconsInfo = JSON.parse(String(iconJsonState))[this.currentActiveProject];
-      // 如果symbol file更新了；先更新symbol file然后重新获取新的项目详情再传输symbol file。
       const fileName = await this.getFileAndWrite(currentProjectIconsInfo.icons, activeProjectConfig.transionSymbolJsDir);
       // 写html
       try {
-        const html = fs.readFileSync(activeProjectConfig.symbolJsWiteTemplateDir, 'utf8');
-        const str = `<script id="fontFile" src="${ fileName }"></script></head>`;
-        fs.writeFileSync(activeProjectConfig.symbolJsWiteTemplateDir, html.replace(/<script id\=\"fontFile\"(.*?)<\/script>/g, '').replace('<\/head>', str));
+        if (!activeProjectConfig.symbolJsWiteTemplateDir.endsWith('false')) {
+          const html = fs.readFileSync(activeProjectConfig.symbolJsWiteTemplateDir, 'utf8');
+          const str = `<script id="fontFile" src="${ fileName }"></script></head>`;
+          fs.writeFileSync(activeProjectConfig.symbolJsWiteTemplateDir, html.replace(/<script id\=\"fontFile\"(.*?)<\/script>/g, '').replace('<\/head>', str));
+        }
         window.showInformationMessage(`传输完成`);
       } catch (e) {
         window.showErrorMessage(`font.js文件写入模版文件失败`);
@@ -130,16 +156,17 @@ export class VueIconfontHelper {
   }
   // 生成workspace list
   private generateWorkSpaceList() {
+    const hasCurrentWs = this.workspaceList.find(item => item.active)
     this.workspaceList = [];
     const wsList = workspace.workspaceFolders || [];
     const getConfig = workspace.getConfiguration("iconfont",undefined);
     this.currentTextDocumentFileUri = window.activeTextEditor?.document.uri
-    console.log('window.activeTextEditor?.document.uri;', window.activeTextEditor?.document.uri);
     const config: ConfigType = {
+      projectUrl:'',
       transionMethod: getConfig.get('transionMethod') || 'svg',
       transionSvgDir: String(getConfig.get('transionSvgDir')).replace('\\', '/') || '',
       transionSymbolJsDir: String( getConfig.get('transionSymbolJsDir')).replace('\\', '/') || '',
-      symbolJsWiteTemplateDir: String(getConfig.get('symbolJsWiteTemplateDir')).replace('\\', '/') || '',
+      symbolJsWiteTemplateDir: String(getConfig.get('symbolJsWiteTemplateDir')).replace('\\', '/') || 'false',
       projectName: ''
     };
     wsList.map((item,index) => {
@@ -150,15 +177,20 @@ export class VueIconfontHelper {
         const configJsonfile = fs.readFileSync(configJsondir, 'utf8');
         realConfig = Object.assign({}, config, JSON.parse(configJsonfile));
       }
-      // 当前光标所在文件即为默认选项
-      if (this.currentTextDocumentFileUri && this.currentTextDocumentFileUri.path.indexOf(item.uri.fsPath) > -1) {
+      if (!hasCurrentWs) {
+        // 当前光标所在文件即为默认选项
+        if (this.currentTextDocumentFileUri && this.currentTextDocumentFileUri.path.indexOf(item.uri.fsPath) > -1) {
+          realConfig.active = true;
+        }
+        // 如果没有打开的项目,默认选中第一个项目
+        if (!this.currentTextDocumentFileUri && index === 0) {
+          realConfig.active = true;
+        }
+      } else if (hasCurrentWs.projectUrl === item.uri.fsPath) {
         realConfig.active = true;
       }
-      // 如果没有打开的项目,默认选中第一个项目
-      if (!this.currentTextDocumentFileUri&&index===0) {
-        realConfig.active = true;
-      }
-      const splitStr = system === 'win' ? item.uri.fsPath.split('\\') :item.uri.fsPath.split('/');
+      const splitStr = system === 'win' ? item.uri.fsPath.split('\\') : item.uri.fsPath.split('/');
+      realConfig.projectUrl = item.uri.fsPath
       realConfig.projectName = splitStr.slice(-1)[0];
       realConfig.transionSvgDir = path.join(item.uri.fsPath, realConfig.transionSvgDir) ;
       realConfig.transionSymbolJsDir = path.join(item.uri.fsPath, realConfig.transionSymbolJsDir);
@@ -203,12 +235,10 @@ export class VueIconfontHelper {
         console.log(this.projectIcons, 'projectIcons');
         await this.transionIconsToProject();
       case 'select':
-        // 传输至本地项目中
         data&&this.workspaceList.map(item => {
-          item.active = item.projectName === String(data)? true:false;
+          item.active = item.projectName === String(data) ? true : false;
           return item;
         });
-        console.log(this.workspaceList)
     }
   }
 }

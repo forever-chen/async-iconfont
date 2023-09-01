@@ -6,7 +6,7 @@
 	"engines": {
 		"vscode": "^1.77.0"
 	},
-	"publisher": "dbfu321",
+	"publisher": "forever-chen",
 	"categories": [
 		"Other"
 	],
@@ -15,14 +15,14 @@
 		"图标"
 	],
 	"repository": {
-		"url": "https://github.com/dbfu/async-iconfont"
+		"url": "https://github.com/forever-chen/async-iconfont"
 	},
 	"bugs": {
-		"url": "https://github.com/dbfu/async-iconfont/issues"
+		"url": "https://github.com/forever-chen/async-iconfont/issues"
 	},
 	"icon": "iconfont.webp",
 	"activationEvents": [],
-	"main": "./out/main.js",
+	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{

@@ -7,7 +7,7 @@ import { VueIconfontHelper } from './webview/iconfont';
 export function activate(context: vscode.ExtensionContext) {
 	const cookie = vscode.workspace.getConfiguration().get('iconfont.cookie') as string;
 	if (!cookie) {
-		vscode.window.showErrorMessage('请先配置cookie');
+		vscode.window.showErrorMessage('请先登录iconfont官网获取并配置cookie');
 		return;
 	}
 	vueService.setCookie(cookie);
