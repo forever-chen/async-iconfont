@@ -95,6 +95,7 @@
 	},
 	"scripts": {
 		"compile": "rm -rf ./out&& mkdir ./out && mkdir ./out/src && cp -R ./src/html ./out/src/",
+		"compile:win": "rd /s /q out && mkdir out && mkdir out\\src && xcopy /E src\\html out\\src\\html\\",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
