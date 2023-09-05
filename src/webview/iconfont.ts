@@ -3,7 +3,6 @@ import { ExtensionContext, Position, Range, Uri, ViewColumn, WebviewPanel, windo
 import * as crypto from 'crypto';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as http from 'http';
 import * as os from 'os';
 import { getIndexHtml, getLoadingHtml } from '../utils';
 import { vueService } from './service';
@@ -13,8 +12,8 @@ const system = os.platform().indexOf('win32') > -1 ? 'win' : 'other';
 export class VueIconfontHelper {
   webviewPanel: WebviewPanel | undefined;
   context: ExtensionContext;
-  projectIcons: Icon[] = [];
-  localIcons: Icon[] = [];
+  localIcons: Icon[] = [];  // 项目icons
+  searchIcons:Icon[] =[];  // 全局搜索icons
   projectRootPath: string | undefined; // 第一个项目根目录
   iconsDirPath: string | undefined;  // icons传输完整目录
   currentTextDocumentFileUri: Uri | undefined; // 当前光标所在工作空间文件
@@ -23,6 +22,8 @@ export class VueIconfontHelper {
   workspaceList: ConfigType[] = [];  // 工作空间list
   constructor(context: ExtensionContext) {
     this.context = context;
+    this.localIcons = [];
+    this.searchIcons = [];
     this.dirPath = workspace.getConfiguration().get('iconfont.dirPath') as string || '/src/assets/icons';
     this.currentTextDocumentFileUri = window.activeTextEditor?.document.uri;
     this.currentActiveProject = '';
@@ -89,7 +90,7 @@ export class VueIconfontHelper {
     });
   }
   // 检查配置信息是否完整正确
-  private checkConfig(info: ConfigType | undefined) {
+  private checkConfig(info: ConfigType | undefined,activeType?:string) {
     console.log(4444,info)
     if (!info) {
       window.showErrorMessage('请先配置传输类型和传输路径。');
@@ -99,7 +100,7 @@ export class VueIconfontHelper {
       window.showErrorMessage('传输方式配置不正确，只能是svg或者symbol，请检查：transionMethod');
       return false;
     }
-    if (info.transionMethod === 'svg') {
+    if (info.transionMethod === 'svg' || activeType) {
       if (!fs.existsSync(info.transionSvgDir)) {
         window.showErrorMessage('icons传输路径不存在，请检查传输地址配置：transionSvgDir');
         return false;
@@ -116,23 +117,41 @@ export class VueIconfontHelper {
     }
     return true
   }
-  // 传输icons到项目中
-  public async transionIconsToProject() {
+  // 传输项目icons或者单个到项目中
+  public async transionIconsToProject(iconfInfo?:{type:string,id:string}) {
     this.generateWorkSpaceList();
     const activeProjectConfig = this.workspaceList.find(item => item.active);
-    if (!this.checkConfig(activeProjectConfig)) {
+    if (!this.checkConfig(activeProjectConfig, iconfInfo?.type)) {
       return;
     }
-    if (activeProjectConfig?.transionMethod === 'svg') {
-      let allIcons = this.context!.globalState.get('iconJsonState') && JSON.parse(String(this.context!.globalState.get('iconJsonState'))) || {};
-      allIcons[this.currentActiveProject].icons.map((item: { font_class: string; show_svg: string | NodeJS.ArrayBufferView; }) => {
-        fs.writeFileSync(`${ activeProjectConfig.transionSvgDir }/${ item.font_class }.svg`, item.show_svg);
+    if (activeProjectConfig?.transionMethod === 'svg' || iconfInfo) {
+      let transitionIcons = []
+      const publicUrl = `${ activeProjectConfig?.transionSvgDir }/`
+      if (iconfInfo) {
+        let showSvgInfo;
+        if (iconfInfo.type === 'projectIcons') {
+          showSvgInfo = this.localIcons.find(i => i.id === iconfInfo.id)
+        } else {
+          showSvgInfo = this.searchIcons.find(i => i.id === iconfInfo.id)
+        }
+        transitionIcons = [showSvgInfo]
+      } else {
+        transitionIcons = await vueService.getProjectIcons(this.currentActiveProject)
+      }
+      transitionIcons.map((item: Icon | undefined) => {
+        if (!item){ return;}
+        let iconPath = publicUrl + item.fontClass
+        try {
+          fs.accessSync(iconPath+'.svg', fs.constants.F_OK);
+          fs.writeFileSync(`${ iconPath }_${item.id}.svg`, item.showSvg);
+        } catch (err) {
+          fs.writeFileSync(`${ iconPath }.svg`, item.showSvg);
+        }
       });
       window.showInformationMessage(`传输完成`);
     } else if (activeProjectConfig?.transionMethod === 'symbol'){
-      const iconJsonState = (this.context!.globalState.get('iconJsonState'));
-      const currentProjectIconsInfo = JSON.parse(String(iconJsonState))[this.currentActiveProject];
-      const fileName = await this.getFileAndWrite(currentProjectIconsInfo.icons, activeProjectConfig.transionSymbolJsDir);
+      const currentProjectIconsInfo = await vueService.getProjectIcons(this.currentActiveProject);
+      const fileName = await this.getFileAndWrite(currentProjectIconsInfo, activeProjectConfig.transionSymbolJsDir);
       // 写html
       try {
         if (!activeProjectConfig.symbolJsWiteTemplateDir.endsWith('false')) {
@@ -146,14 +165,16 @@ export class VueIconfontHelper {
       }
     } 
   }
+
   private async getFileAndWrite(icons: any[], targetDir: string) {
-    const svgStr = icons.map(icon => `<symbol id="${icon.font_class}" viewBox="0 0 1024 1024">` + icon.show_svg.replace(/<svg.*?>|<\/svg>/g, '') + '</symbol>').join('');
+    const svgStr = icons.map(icon => `<symbol id="${icon.fontClass}" viewBox="0 0 1024 1024">` + icon.showSvg.replace(/<svg.*?>|<\/svg>/g, '') + '</symbol>').join('');
     const jsStr = `window._iconfont_svg_string_3201924 = '<svg>${ svgStr}</svg>', function (n) { var t = (t = document.getElementsByTagName("script"))[t.length - 1], e = t.getAttribute("data-injectcss"), t = t.getAttribute("data-disable-injectsvg"); if (!t) { var o, i, a, d, c, s = function (t, e) { e.parentNode.insertBefore(t, e) }; if (e && !n.__iconfont__svg__cssinject__) { n.__iconfont__svg__cssinject__ = !0; try { document.write("<style>.svgfont {display: inline-block;width: 1em;height: 1em;fill: currentColor;vertical-align: -0.1em;font-size:16px;}</style>") } catch (t) { console && console.log(t) } } o = function () { var t, e = document.createElement("div"); e.innerHTML = n._iconfont_svg_string_3201924, (e = e.getElementsByTagName("svg")[0]) && (e.setAttribute("aria-hidden", "true"), e.style.position = "absolute", e.style.width = 0, e.style.height = 0, e.style.overflow = "hidden", e = e, (t = document.body).firstChild ? s(e, t.firstChild) : t.appendChild(e)) }, document.addEventListener ? ~["complete", "loaded", "interactive"].indexOf(document.readyState) ? setTimeout(o, 0) : (i = function () { document.removeEventListener("DOMContentLoaded", i, !1), o() }, document.addEventListener("DOMContentLoaded", i, !1)) : document.attachEvent && (a = o, d = n.document, c = !1, r(), d.onreadystatechange = function () { "complete" == d.readyState && (d.onreadystatechange = null, l()) }) } function l() { c || (c = !0, a()) } function r() { try { d.documentElement.doScroll("left") } catch (t) { return void setTimeout(r, 50) } l() } }(window);`
     const hash = crypto.createHash('md5')
     const fileName = `font_symbol_${ hash.update(svgStr).digest('hex') }.js`
     fs.writeFileSync(path.join(targetDir, fileName), jsStr);
     return fileName
   }
+  
   // 生成workspace list
   private generateWorkSpaceList() {
     const hasCurrentWs = this.workspaceList.find(item => item.active)
@@ -213,7 +234,8 @@ export class VueIconfontHelper {
         break;
       case 'search':
         //iconfont的全局搜索
-        const { icons, pages } = await vueService.searchGlobalIcons({ t: data.searchValue,page:data.page });
+        const { icons, pages } = await vueService.searchGlobalIcons({ t: data.searchValue, page: data.page });
+        this.searchIcons = icons;
         this.webviewPanel?.webview?.postMessage({type:'iconsSearch',data:icons,pages});
         break;
       case 'delete':
@@ -232,8 +254,7 @@ export class VueIconfontHelper {
         break;
       case 'transition':
         // 传输至本地项目中
-        console.log(this.projectIcons, 'projectIcons');
-        await this.transionIconsToProject();
+        await this.transionIconsToProject(data as any);
       case 'select':
         data&&this.workspaceList.map(item => {
           item.active = item.projectName === String(data) ? true : false;

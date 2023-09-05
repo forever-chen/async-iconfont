@@ -77,7 +77,6 @@ export class VueService {
   }
   // 获取项目内icons列表
   public async getProjectIcons(pid: string, refresh?: boolean): Promise<Icon[]> {
-    console.log(this.context!.globalState.keys());
     const iconJsonState = this.context!.globalState.get('iconJsonState') as string;
     let iconsData = iconJsonState && JSON.parse(iconJsonState) && JSON.parse(iconJsonState)[pid]
     if (refresh || !iconsData) {
@@ -86,17 +85,9 @@ export class VueService {
     const icons = iconsData.icons.map((item: any) => ({
       id: String(item.id),
       name: item.name,
-      svgContent: this.judgementColor(item),
-      code: item.font_class,
+      showSvg: this.judgementColor(item),
+      fontClass: item.font_class,
     }));
-    // 如果是更新icons或者本地缓存中还没有该项目icons，则把缓存中icon也更新
-    if (refresh || !iconsData) {
-      let allIcons = this.context!.globalState.get('iconJsonState') && JSON.parse(String(this.context!.globalState.get('iconJsonState'))) || {};
-      if (allIcons) {
-        allIcons[pid] = iconsData;
-      }
-      this.context!.globalState.update('iconJsonState', JSON.stringify(allIcons));
-    }
     return icons;
   }
   // 更新所有项目icon到本地
@@ -151,8 +142,8 @@ export class VueService {
     const icons = iconsData.icons.map((item: any) => ({
         id: String(item.id),
         name: item.name,
-        svgContent: item.show_svg,
-        code: item.font_class,
+        showSvg: item.show_svg,
+        fontClass: item.font_class,
       }));
     return { icons, pages: Math.ceil(iconsData.count / 54) };
   }

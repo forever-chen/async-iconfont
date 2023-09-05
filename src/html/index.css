@@ -137,7 +137,10 @@ html, body {
 }
 
 .iconsList>li .operationMask>div {
-    align-self: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    height: 100%;
 }
 
 .iconsList>li .operationMask svg {

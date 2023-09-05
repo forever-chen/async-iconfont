@@ -11,7 +11,7 @@ export const getIndexHtml = (
 ) => {
   let html = fs.readFileSync(
     path.join(
-      context.extensionPath, './out/src/html/index.html'
+      context.extensionPath, 'out/src/html/index.html'
     )
   ).toString();
   const onDiskPath = Uri.joinPath(context.extensionUri, 'out/src/html')
@@ -25,7 +25,7 @@ export const getLoadingHtml = (
 ) => {
   let html = fs.readFileSync(
     path.join(
-      context.extensionPath, './out/src/html/loading.html'
+      context.extensionPath, 'out/src/html/loading.html'
     )
   ).toString();
 

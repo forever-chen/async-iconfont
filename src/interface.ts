@@ -1,8 +1,8 @@
 export interface Icon {
   id: string;
   name: string;
-  svgContent: string;
-  code: string;
+  showSvg: string;
+  fontClass: string;
 }
 
 export interface EventData {
