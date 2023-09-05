@@ -9,23 +9,24 @@ export const getIndexHtml = (
   context: ExtensionContext,
   webviewPanel: WebviewPanel | undefined,
 ) => {
+  const out = fs.existsSync(path.join(context.extensionPath, 'src')) ? '' : 'out'
   let html = fs.readFileSync(
     path.join(
-      context.extensionPath, './src/html/index.html'
+      context.extensionPath, context!.globalState.get('outExist') as string,'./src/html/index.html'
     )
   ).toString();
-  const onDiskPath = Uri.joinPath(context.extensionUri, './src/html')
+  const onDiskPath = Uri.joinPath(context.extensionUri, out,'./src/html')
   const catGifSrc = webviewPanel && webviewPanel.webview.asWebviewUri(onDiskPath);
   // console.log(catGifSrc)
   return html.replace(/\$var_url/g,()=>catGifSrc as unknown as string)
 };
-
 export const getLoadingHtml = (
   context: ExtensionContext,
 ) => {
+  const out = fs.existsSync(path.join(context.extensionPath, 'src')) ? '' : 'out'
   let html = fs.readFileSync(
     path.join(
-      context.extensionPath, './src/html/loading.html'
+      context.extensionPath, context!.globalState.get('outExist') as string, './src/html/loading.html'
     )
   ).toString();
 

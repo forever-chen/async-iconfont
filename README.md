@@ -10,11 +10,11 @@ async-iconfont插件的目的，主要是为了更便捷使用 [iconfont](https:
 
 以下是插件界面功能展示
 
-![插件简介](./src/html/images/intro.jpg)
+![插件简介](out/src/html/images/intro.jpg)
 删除项目中的图标和导出单个图标至本地项目
-![](./src/html/images/projectOperation.jpg)
+![](out/src/html/images/projectOperation.jpg)
 搜索iconfont官网图标并直接添加到项目中、也可直接导出单个图标至本地项目
-![](./src/html/images/search.jpg)
+![](out/src/html/images/search.jpg)
 
 # 插件使用方式
 
@@ -35,13 +35,13 @@ async-iconfont插件的目的，主要是为了更便捷使用 [iconfont](https:
 
 ### 2. cookie复制
 
-![辅助cookie](./src/html/images/cookie.jpg)
+![辅助cookie](out/src/html/images/cookie.jpg)
 
 ### 3. 插件配置（两种方式）
 
 ### 第一种：User Settings
 在vscode的用户配置（User Settings）中找到插件进行配置。
-![配置](./src/html/images/config.jpg)
+![配置](out/src/html/images/config.jpg)
 
 ### 第二种：本地项目加配置文件
 在本地项目根目录下新建iconfont配置文件：文件名【.iconfont.json】。

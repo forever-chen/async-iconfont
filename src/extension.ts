@@ -4,12 +4,15 @@ import * as vscode from 'vscode';
 import { vueService } from './webview/service';
 import * as SideBar from './webview/siderMenu';
 import { VueIconfontHelper } from './webview/iconfont';
+import * as fs from 'fs';
+import * as path from 'path';
 export function activate(context: vscode.ExtensionContext) {
 	const cookie = vscode.workspace.getConfiguration().get('iconfont.cookie') as string;
 	if (!cookie) {
 		vscode.window.showErrorMessage('请先登录iconfont官网获取并配置cookie');
 		return;
 	}
+	context!.globalState.update('outExist', fs.existsSync(path.join(context.extensionPath, 'src')) ? '' : 'out') 
 	vueService.setCookie(cookie);
 	vueService.setContext(context);
 	const siderInstance = new SideBar.ListDataProvider();

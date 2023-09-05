@@ -32,7 +32,7 @@ export class VueService {
   }
   // 获取项目列表
   public async getProject(refresh?: boolean): Promise<Icon[]> {
-    this.clearGlobalState();
+    // this.clearGlobalState();
     const url = '/api/user/myprojects.json?page=1&isown_create=1&t=1692675848377';
     const url1 = '/api/user/myprojects.json?page=1&isown_create=2&t=1692675848377';
     const projectInfoState = this.context!.globalState.get('projectInfoState');
@@ -58,6 +58,7 @@ export class VueService {
       return item.show_svg;
     }
   }
+  
   // 获取项目详情
   public async getIconProjectDetail(id: string) {
     const iconJsonState = this.context!.globalState.get('iconJsonState');
