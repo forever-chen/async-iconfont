@@ -8,12 +8,13 @@ async-iconfont插件的目的，主要是为了更便捷使用 [iconfont](https:
 2. 可搜索iconfont的所有图标，并且添加至iconfont项目中;
 3. 可导出图标至本地，主要分为两种方式：一、svg文件形式；二、官网推荐的 [symbol引用](https://www.iconfont.cn/help/detail?spm=a313x.manage_type_myprojects.i1.d8cf4382a.77b13a81pEzUTj&helptype=code) 方式;
 
-以下是插件界面功能展示
-
+以下是插件界面功能展示：
 ![插件简介](out/src/html/images/intro.jpg)
-删除项目中的图标和导出单个图标至本地项目
+
+删除项目中的图标和导出单个图标至本地项目：
 ![](out/src/html/images/projectOperation.jpg)
-搜索iconfont官网图标并直接添加到项目中、也可直接导出单个图标至本地项目
+
+搜索iconfont官网图标并直接添加到项目中、也可直接导出单个图标至本地项目：
 ![](out/src/html/images/search.jpg)
 
 # 插件使用方式
