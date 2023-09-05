@@ -11,10 +11,10 @@ export const getIndexHtml = (
 ) => {
   let html = fs.readFileSync(
     path.join(
-      context.extensionPath, 'out/src/html/index.html'
+      context.extensionPath, './src/html/index.html'
     )
   ).toString();
-  const onDiskPath = Uri.joinPath(context.extensionUri, 'out/src/html')
+  const onDiskPath = Uri.joinPath(context.extensionUri, './src/html')
   const catGifSrc = webviewPanel && webviewPanel.webview.asWebviewUri(onDiskPath);
   // console.log(catGifSrc)
   return html.replace(/\$var_url/g,()=>catGifSrc as unknown as string)
@@ -25,7 +25,7 @@ export const getLoadingHtml = (
 ) => {
   let html = fs.readFileSync(
     path.join(
-      context.extensionPath, 'out/src/html/loading.html'
+      context.extensionPath, './src/html/loading.html'
     )
   ).toString();
 
